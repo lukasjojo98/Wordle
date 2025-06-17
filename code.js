@@ -43,7 +43,15 @@ function createKeyboard() {
             fieldItem.classList.add('keyboard-item');
             fieldItem.innerHTML = items[j];
             fieldItem.addEventListener("click", () => {
-                addLetter(fieldItem.innerHTML);
+                if(fieldItem.innerHTML == "Delete"){
+                    removeLetter();
+                }
+                else if(fieldItem.innerHTML == "Enter"){
+                    animateLetterBackground();
+                }
+                else {
+                    addLetter(fieldItem.innerHTML);
+                }
             });
             rowContainer.append(fieldItem);
         }
@@ -97,6 +105,15 @@ function addLetter(letterValue) {
     });
 }
 
+function removeLetter() {
+    const id = currentRow + "," + currentCol;
+    const element = document.getElementById(id);
+    element.innerHTML = "";
+    if(currentCol != 0){
+        currentCol--;
+    }
+}
+
 function animateLetterBackground() {
     const elements = document.querySelectorAll('#row-' + currentRow)[0].childNodes;
     let i = 0;
@@ -138,6 +155,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("keydown", (event) => {
     if(isAnimationDone){
+        if(event.key === 'Backspace'){
+            removeLetter();
+        }
         processKeypress(event.key);
     }
 });
