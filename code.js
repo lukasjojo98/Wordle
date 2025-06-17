@@ -4,6 +4,9 @@ let currentRow = 0;
 let currentCol = 0;
 let isEntered = false;
 let interval;
+let isAnimationDone = true;
+let correctLetters = 0;
+const word = "party";
 
 const firstRow = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"];
 const secondRow = ["A", "S", "D", "F", "G", "H", "J", "K", "L"];
@@ -55,6 +58,7 @@ function processKeypress(key) {
         if(key == "Enter"){
             if(currentCol == 4){
                 isEntered = true;
+                isAnimationDone = false;
             }
             animateLetterBackground();
             return;
@@ -69,20 +73,27 @@ function processKeypress(key) {
 function addLetter(letterValue) {
     const id = currentRow + "," + currentCol;
     const element = document.getElementById(id);
-    element.innerHTML = letterValue;
-    element.classList.add('scale-up-center');
-    if(currentCol == 4){
-        return;
-    }
-    if(currentCol == 4 && isEntered){
-        currentCol = 0;
-        currentRow++;
-    }
-    else{
-        currentCol++;
+    if(isAnimationDone){
+        element.innerHTML = letterValue;
+        element.classList.add('scale-up-center');
+        if(currentCol == 4 && isEntered){
+            currentCol = 0;
+            currentRow++;
+            isEntered = !isEntered;
+        }
+        else if(currentCol < 4){
+            currentCol++;
+        }
     }
     element.addEventListener("animationend", () => {
         element.classList.remove('scale-up-center');
+        setTimeout(() => {
+            isAnimationDone = true;
+            if(correctLetters == 5){
+                alert("Win!");
+            }
+            correctLetters = 0;
+        }, 3000);
     });
 }
 
@@ -92,12 +103,28 @@ function animateLetterBackground() {
     interval = setInterval(() => {
         animateGrid(elements, i);
         i++;
-    }, 100);
+    }, 500);
+}
+
+function checkLetter(enteredLetter, indexInWord) {
+    if(word[indexInWord] == enteredLetter.toLowerCase()){
+        return "bg-animate-correct-position";
+    }
+    else if(word[indexInWord] !== enteredLetter.toLowerCase() && word.includes(enteredLetter.toLowerCase())){
+        return "bg-animate-correct-letter";
+    }
+    else {
+        return "bg-animate-incorrect";
+    }
 }
 
 function animateGrid(elements, index) {
     if(index < elements.length){
-        elements[index].classList.add('bg-animate-correct-letter');
+        const cssClass = checkLetter(elements[index].innerHTML, elements[index].id.split(",")[1]);
+        if(cssClass == "bg-animate-correct-position"){
+            correctLetters++;
+        }
+        elements[index].classList.add(cssClass);
     }
     else {
         clearInterval(interval);
@@ -110,5 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("keydown", (event) => {
-    processKeypress(event.key);
+    if(isAnimationDone){
+        processKeypress(event.key);
+    }
 });
